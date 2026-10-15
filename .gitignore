@@ -1,0 +1,14 @@
+# 解压后的大图数据（约 348 MB），用 tools/decompress.py 从 data/gz/*.gr.gz 重新生成
+gen_by_ds/data/*.gr
+
+# 编译产物
+gen_by_ds/build/
+*.exe
+*.obj
+*.o
+*.pdb
+*.ilk
+
+# 运行期临时文件
+gen_by_ds/results/tmp/
+*.log.bak

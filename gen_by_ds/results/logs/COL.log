@@ -1,0 +1,11 @@
+[bench] loading graph C:\Users\ß´¹¾\Desktop\ads26_pj2\data\USA-road-d.COL.gr ...
+[bench] graph loaded: n=435666 m=1057066 in 40 ms
+[bench] loaded 1000 queries from C:\Users\ß´¹¾\Desktop\ads26_pj2\data\queries\COL.p2p
+  [p2p ] binary      runs=1000 total= 24246.20ms avg=24.24620ms settled/q=213974 pops=213974032 decs=15904512 arcs=524616641
+  [full] binary      runs=16 total=  1007.49ms avg=62.96820ms settled/run=435666 pops=6970656 decs=490754 cmps=111285049
+  [p2p ] binomial    runs=1000 total= 51541.50ms avg=51.54150ms settled/q=213974 pops=213974026 decs=15905129 arcs=524616622
+  [full] binomial    runs=16 total=  1556.46ms avg=97.27899ms settled/run=435666 pops=6970656 decs=490765 cmps=77488707
+  [p2p ] fibonacci   runs=1000 total= 54041.32ms avg=54.04132ms settled/q=213974 pops=213974030 decs=15904668 arcs=524616621
+  [full] fibonacci   runs=16 total=  1633.68ms avg=102.10513ms settled/run=435666 pops=6970656 decs=490749 cmps=84119642
+  [p2p ] binary-lazy runs=1000 total= 19003.95ms avg=19.00395ms settled/q=213974 pops=229854524 decs=0 arcs=524616638
+  [full] binary-lazy runs=16 total=   656.17ms avg=41.01036ms settled/run=435666 pops=7461397 decs=0 cmps=119708258

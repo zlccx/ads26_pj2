@@ -1,0 +1,11 @@
+[bench] loading graph C:\Users\ß´¹¾\Desktop\ads26_pj2\data\USA-road-d.BAY.gr ...
+[bench] graph loaded: n=321270 m=800172 in 28 ms
+[bench] loaded 1000 queries from C:\Users\ß´¹¾\Desktop\ads26_pj2\data\queries\BAY.p2p
+  [p2p ] binary      runs=1000 total= 15877.91ms avg=15.87791ms settled/q=162378 pops=162378241 decs=13344706 arcs=407774778
+  [full] binary      runs=16 total=   642.02ms avg=40.12650ms settled/run=321270 pops=5140320 decs=404614 cmps=79981091
+  [p2p ] binomial    runs=1000 total= 38580.06ms avg=38.58006ms settled/q=162378 pops=162378250 decs=13344340 arcs=407774792
+  [full] binomial    runs=16 total=  1141.60ms avg=71.35023ms settled/run=321270 pops=5140320 decs=404623 cmps=55443462
+  [p2p ] fibonacci   runs=1000 total= 39691.81ms avg=39.69181ms settled/q=162378 pops=162378244 decs=13344889 arcs=407774783
+  [full] fibonacci   runs=16 total=  1239.14ms avg=77.44612ms settled/run=321270 pops=5140320 decs=404659 cmps=60593286
+  [p2p ] binary-lazy runs=1000 total= 13687.02ms avg=13.68702ms settled/q=162378 pops=175696615 decs=0 arcs=407774790
+  [full] binary-lazy runs=16 total=   402.39ms avg=25.14931ms settled/run=321270 pops=5544967 decs=0 cmps=86906168
