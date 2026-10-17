@@ -62,5 +62,3 @@ python -c "from pathlib import Path; [Path(p).mkdir(parents=True, exist_ok=True)
 ```
 
 结果都在 `results/reproduce/`。CSV 会追加写入，重复实验前请把上一次的结果移走或换一个输出文件名。
-
-这些命令复现的是当前代码的实验流程，旧报告中的具体数值需要重新测量。更多参数看 [README.md](README.md)，交接给报告同学的变更说明看 [change.md](change.md)。

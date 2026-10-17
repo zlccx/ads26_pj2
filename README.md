@@ -1,8 +1,6 @@
 # ADS Project 2：使用不同堆实现 Dijkstra
 
 > **此文档为详细说明，简单复现实验请参考 [GUIDE.md](GUIDE.md)**
->
-> **修改报告的同学请先阅读 [change.md](change.md)，其中列出了当前实现与旧报告的差异和待重测内容**
 
 实现二叉堆、二项堆、斐波那契堆和惰性删除二叉堆，使用真实 USA 路网与人工图比较性能
 
@@ -83,8 +81,6 @@ python -c "from pathlib import Path; Path('data/queries/d').mkdir(parents=True, 
 - dijkstra.h：图读取、公共统计结构、堆接口适配和模板 Dijkstra
 - dijkstra_bench.cpp：统一性能测试入口
 - selftest.cpp：以 STL priority_queue 为参照验证四种堆的最短路结果
-- tobedone.cpp：保留待处理的状态清理实验，存在策略切换状态残留问题，暂不用于结论
-- 人工数据生成已移到 data/gen_custom.cpp，不再保留 synth_bench.cpp
 
 ## 编译程序
 
@@ -177,5 +173,4 @@ CSV 的 mode 为 offline，runs 仍表示输入点对数，终端另外显示实
 `--dump` 导出 idx、src、dst、dist，按原始查询顺序排列，不给共享搜索虚构单条查询耗时
 显式 `--full-sources` 仍保留额外完整单源测试的原有行为，与同源查询分组分开统计
 
-起点重复较多时可以减少搜索次数；起点几乎各不相同时，完整搜索可能比原来的目标早停更慢，需要实测
-`tobedone.cpp` 仍保留为待处理的旧清理策略实验，新入口不依赖它
+起点重复较多时可以减少搜索次数；起点几乎各不相同时，完整搜索可能比原来的目标早停更慢。
