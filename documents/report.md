@@ -4,23 +4,25 @@
 **课程名称**：高级数据结构与算法 (Advanced Data Structures and Algorithms)  
 **题目编号**：8-1 Shortest Path Algorithm with Heaps  
 **专业年级**：计算机科学与技术 大二  
-**测试平台**：Apple M-series 处理器 / 16 GB 统一内存 / macOS Sequoia / Apple Clang (C++17, -O3)  
+**测试平台**：Apple M-series 处理器 / 16 GB 统一内存 / macOS Sequoia / Apple Clang (C++11/C++17, -O3)  
 **完成日期**：2026 年 10 月  
 
 ---
 
 ## 摘要
 
-最短路径问题是图论与组合优化领域的基础核心问题。Dijkstra 算法作为求解单源最短路径（SSSP）的基石算法，其运行效率与底层最小优先队列（Min-Priority Queue）的实现高度耦合。在数据结构的演进史上，优先队列的演化实质上是“即时规整（Eager Consolidation）”与“策略性懒惰（Strategic Laziness）”两种设计哲学的权衡。针对课程项目 8-1 的各项指标要求，本项目采用 C++17 纯标准库自包含设计，完整实现了四种优先队列结构：**经典索引二叉堆（Binary Heap）、二项堆（Binomial Heap）、斐波那契堆（Fibonacci Heap）以及工程中广泛使用的惰性删除二叉堆（Lazy Binary Heap）**。
+最短路径问题是图论与组合优化领域的基础核心问题。Dijkstra 算法作为求解单源最短路径（SSSP）的基石算法，其运行效率与底层最小优先队列（Min-Priority Queue）的实现高度耦合。在数据结构的演进史上，优先队列的演化实质上是“即时规整（Eager Consolidation）”与“策略性懒惰（Strategic Laziness）”两种设计哲学的权衡。
 
-在理论分析层面，本报告深入剖析了斐波那契堆的内部机制与复杂度本质。通过构造势能函数 $\Phi(H) = t(H) + 2m(H)$，将堆的树数量与标记节点数量精确量化，推导了其均摊 $O(1)$ 减键与均摊 $O(\log n)$ 弹出的理论边界；并采用数学归纳法与斐波那契数求和定理，完备证明了节点子树大小下界 $\text{size}(x) \ge F_{k+2}$ 与最大度数界限定理 $D(n) = O(\log n)$，阐明了级联剪切（Cascading Cut）在防止树形结构退化中的关键作用。
+本项目基于 C++11/C++17 标准库，构建了高度模块化且无外部依赖的工程体系（涵盖 `code/heaps.h`、`code/dijkstra.h`、`code/offline.h`），完整实现了四种优先队列结构：**经典索引二叉堆（Binary Heap）、二项堆（Binomial Heap）、斐波那契堆（Fibonacci Heap）以及工程中广泛使用的惰性删除二叉堆（Lazy Binary Heap）**。通过设计 `HeapAccess` 模板特化适配层与统一的 `DijkstraRunner<Heap>` 主循环，实现了四种堆在同一套核心算法逻辑下的零开销切换，彻底排除了代码副本差异对性能测试的干扰。
 
-在实证研究层面，本项目选用了第 9 届 DIMACS 算法挑战赛提供的 7 组美国真实道路网络（规模涵盖 26 万至 189 万顶点），执行了严格的 1000 组点对查询（早停机制）与 16 组全图单源遍历测试。针对基础实验中“渐近理论最优的斐波那契堆在实际路网上落后于二叉堆”的现象，本项目并未止步于表面推测，而是基于控制变量法设计了**三组对照实验**：
-1. **人工三层图减键频率控制实验**：解耦拓扑结构，实证揭示在高达 89.7 万次极端减键压力下，惰性二叉堆因陈旧副本堆积导致耗时增长 49.4 倍（从 1.15 ms 增至 56.69 ms）、比较次数达到 3270 万次，而原生支持原地减键的堆结构保持了优良的运行稳定性；
-2. **状态清理策略消融实验**：量化论证了按需局部清理（Partial Reset）相对于全量清理（Full Reset）带来的最高 1.62 倍加速比；
-3. **搜索规模分档对照实验**：揭示随着探索节点数扩大，常数开销被充分平摊，斐波那契堆相对二叉堆的耗时倍率呈现从 1.746x 收窄至 1.669x 的平滑收敛趋势。
+在理论分析层面，本报告深入剖析了斐波那契堆的内部机制与复杂度本质。通过构造势能函数 $\Phi(H) = t(H) + 2m(H)$，将堆的树数量与标记节点数量精确量化，推导了其均摊 $O(1)$ 减键与均摊 $O(\log n)$ 弹出的理论边界；并采用数学归纳法与斐波那契数求和定理，完备证明了节点子树大小下界 $\text{size}(x) \ge F_{k+2}$ 与最大度数界限定理 $D(n) = O(\log n)$，阐明了级联剪切（Cascading Cut）在防止树形结构退化中的关键作用。此外，针对批量查询场景，报告补充推导了普通点对早停与离线同源合并策略的理论复杂度边界。
 
-全部实验数据均通过了单元自测、10 万次随机操作对拍以及与独立 SPFA 算法的交叉一致性验证。报告附录提供了全部四种优先队列及 Dijkstra 算法的完整源码与详尽注释。
+在实证研究层面，本项目选用了第 9 届 DIMACS 算法挑战赛提供的 7 组美国真实道路网络（规模涵盖 26 万至 189 万顶点，覆盖物理距离与通行时间两种边权类型），执行了严格的 1000 组点对查询（目标早停机制）与 16 组全图单源遍历测试。针对基础实验中“渐近理论最优的斐波那契堆在实际路网上落后于二叉堆”的现象，本项目并未止步于表面推测，而是基于控制变量法设计了**三组对照实验**：
+1. **Decrease-Key 频率控制实验**：解耦拓扑结构，实证揭示在高达 89.7 万次极端减键压力下，惰性二叉堆因陈旧失效副本堆积导致耗时增长 49.4 倍（从 1.15 ms 增至 56.69 ms）、比较次数达到 3270 万次，而原生支持原地减键的堆结构保持了优良的运行稳定性；
+2. **状态清理策略消融实验**：量化论证了基于实际发现点（Touched）的按需局部清理相对于全量清空数组带来的最高 1.62 倍加速比；
+3. **搜索规模分档实验**：揭示随着探索节点数扩大，常数开销被充分平摊，斐波那契堆相对二叉堆的耗时倍率呈现从 1.746x 收窄至 1.669x 的平滑收敛趋势。
+
+项目在 `code/selftest.cpp` 中以 C++ STL 独立的 `std::priority_queue` 建立黄金基准，覆盖 30 组随机小图与边界极端用例，四种堆与离线优化策略均 100% 通过了自动化一致性检验。报告附录提供了全部四种优先队列、统一求解引擎及离线同源优化策略的完整源码与详尽注释。
 
 ---
 
@@ -88,15 +90,20 @@
 
 ## 1.3 项目任务与实施方案
 
-针对课程 Project 8-1 的要求，本项目完成了以下工作：
-1. **算法与数据结构实现**：使用纯标准库 C++17 完整实现了带位置映射的经典二叉堆、二项堆、斐波那契堆，以及工程中常见的惰性删除二叉堆。设计了统一的 Dijkstra 算法模板引擎，以确保比较基准的一致性。
-2. **基准数据集评测**：选用第 9 届 DIMACS 算法挑战赛提供的 7 组美国实际道路网络（NY, BAY, COL, FLA, NW, NE, CAL），顶点规模从 26 万平滑扩展至 189 万。对每组网络执行 1000 次点对最短路径查询（启用目标早停机制）及 16 次完整单源最短路径遍历，测量运行耗时与操作次数。
-3. **补充对照实验**：为了进一步分析理论预测与实测表现差异的原因，设计了人工三层图减键频率控制实验、状态清理策略消融实验，以及搜索规模分档对照实验。
+针对课程 Project 8-1 的要求与工程规范，本项目完成了以下工作：
+1. **模块化自包含代码架构**：项目采用纯 C++11/C++17 标准库构建，划分为职责分明的模块：
+   - `code/heaps.h`：统一封装四大优先队列（二叉堆、二项堆、斐波那契堆、惰性二叉堆）；
+   - `code/dijkstra.h`：实现 CSR 紧凑图存储、快速整块 I/O 读入、微观操作统计器 `DijkstraStats`、`HeapAccess` 特化适配层及统一主求解器 `DijkstraRunner`；
+   - `code/offline.h`：设计实现了针对批量同源查询的离线排序与共享搜索优化算法 `solveOffline`；
+   - `code/dijkstra_bench.cpp` 与 `code/optimize_bench.cpp`：分别作为标准点对早停与离线优化策略的性能测试入口；
+   - `code/selftest.cpp`：自动化回归测试程序，以标准库 `std::priority_queue` 为对照验证四种自实现堆及离线策略的正确性。
+2. **基准数据集评测**：选用第 9 届 DIMACS 算法挑战赛提供的 7 组美国实际道路网络（NY, BAY, COL, FLA, NW, NE, CAL），顶点规模从 26 万平滑扩展至 189 万，覆盖物理距离（`d`）与通行时间（`t`）两套边权。针对每张网络执行 1000 组随机点对最短路径查询（基于统一的固定随机种子生成，起终点不同，启用目标早停机制）及 16 组全图单源最短路径遍历，精确测量运行耗时与微观操作计数。
+3. **补充对照实验**：为了进一步分析理论预测与实测表现差异的原因，设计了人工三层图减键频率控制实验、基于触碰顶点的状态清理策略消融实验、以及搜索规模分档对照实验。
 
 ## 1.4 核心研究问题
 
 本报告主要探讨以下三个递进问题：
-- **Q1（理论机制）**：斐波那契堆如何通过延迟合并与级联剪切，将减键操作的摊还复杂度降至 $O(1)$？
+- **Q1（理论机制）**：斐波那契堆如何通过延迟合并与级联剪切，将减键操作的摊还复杂度降至 $O(1)$？批量查询下普通早停与离线同源策略的理论边界如何权衡？
 - **Q2（实测表现与成因）**：在真实美国道路网络上，各堆结构的实际运行时间如何？理论上更优的斐波那契堆为何表现不及二叉堆？
 - **Q3（控制变量与假设检验）**：在人为构造的高频减键测试中，原生减键操作与惰性删除策略的表现有何本质不同？
 
@@ -106,29 +113,35 @@
 
 ## 2.1 Dijkstra 算法框架与抽象设计
 
-为保证不同堆结构在同一测试标准下比较，本项目构建了统一的模板类 `DijkstraRunner<Heap>`。所有优先队列均提供统一的接口：
-- `clear()`：重置堆内部状态；
-- `insert(v, key)`：向堆中插入顶点 $v$ 及初始距离；
-- `decreaseKey(v, new_key)`：将顶点 $v$ 的键值减小为更短距离；
-- `extractMin()`：弹出并返回当前键值最小的顶点编号；
-- `contains(v)` / `keyOf(v)`：查询顶点是否在堆中及其当前距离；
-- `cmps()`：统计堆内部发生的关键字比较次数。
+为保证不同堆结构在同一测试标准下公平比较，消除算法框架代码分叉带来的系统性偏差，本项目设计了统一的模板类 `DijkstraRunner<Heap>` 与特化适配层 `HeapAccess<Heap>`。
 
-算法执行流程如下：
-1. 将源点 $s$ 的距离置为 0，插入堆中；
-2. 循环执行 `extractMin()` 取出未确定的最小距离顶点 $u$，标记其已确定，并记录到 `settled` 列表中；
-3. **早停机制（Early Stopping）**：在点对查询模式下，若当前弹出的 $u$ 为目标终点 $t$，则提前退出循环；
-4. 遍历 $u$ 的出边 $(u, v, w)$，计算松弛后的暂定距离：若 $v$ 未入堆则调用 `insert`；若已在堆中且距离更短，则调用 `decreaseKey`；
-5. 查询结束后，仅遍历 `settled` 列表清空访问标记，完成局部状态重置。
+### 2.1.1 堆访问适配器 (HeapAccess)
+不同优先队列在减键操作上存在机制差异：二叉堆、二项堆和斐波那契堆支持原生原地更新，而惰性二叉堆采用重复压入新副本的策略。为此，`HeapAccess` 提供了编译期统一抽象：
+- 常规堆特化：`HeapAccess<Heap>::insert` 映射至 `heap.insert`，`decrease` 映射至 `heap.decreaseKey`，出堆时直接读取距离；
+- 惰性堆特化：`HeapAccess<LazyBinaryHeap>::decrease` 映射至 `heap.push`（新增队列条目），出堆时返回键值并设置 `lazy = true`。
+
+在 `DijkstraRunner` 主循环中，统一执行出堆检验：
+```cpp
+Key k;
+int u = HeapAccess<Heap>::pop(heap, k, dist);
+if (done[u] || k != dist[u]) continue; // 惰性堆的过期条目与重复记录在此统一过滤
+```
+这一设计使得所有堆结构共享**完全相同的单一算法主循环**。
+
+### 2.1.2 两种运行模式
+1. **普通点对早停模式（P2P）**：
+   在单次查询中，源点 $s$ 距离置零入堆。循环提取当前距离最小的顶点 $u$，一旦目标终点 $t$ 作为有效最小值从堆中弹出，算法立即记录答案并终止搜索，剪枝掉图中剩余的大量未访问节点。
+2. **离线同源分组模式（Offline）**：
+   对于批量查询输入，`solveOffline` 先将所有查询按起点编号进行排序和分组。对于同一起点的多个目标，仅执行**一次完整单源搜索**，在遍历过程中直接收集该组内所有目标的距离，最后按原始输入序号还原答案。
 
 ## 2.2 二叉堆 (Binary Heap)
 
-二叉堆采用平坦的一维数组存储完全二叉树。为了支持 $O(\log n)$ 的减键操作，额外维护了位置数组 `pos[v]`（记录顶点 $v$ 在堆数组中的下标）：
+二叉堆采用平坦的一维动态数组存储完全二叉树。为了支持 $O(\log n)$ 的减键操作，额外维护了位置数组 `pos[v]`（记录顶点 $v$ 在堆数组中的下标）：
 - **Insert**：将新元素加入数组末尾，通过 `siftUp` 向上浮动并调整位置，耗时 $O(\log n)$；
 - **Extract-Min**：取出堆顶 `heap[0]`，将末尾元素移至堆顶后通过 `siftDown` 下沉调整，耗时 $O(\log n)$；
 - **Decrease-Key**：通过 `pos[v]` 在 $O(1)$ 内直接定位元素位置，更新距离后调用 `siftUp` 上浮，耗时 $O(\log n)$。
 
-在节点交换过程中，必须同步更新对应的 `pos` 数组映射。
+在节点交换过程中，必须同步更新对应的 `pos` 数组映射。堆清空时仅根据 `touched` 数组恢复使用过的 `pos` 值为 -1，保留底层数组容量供下一轮复用。
 
 ## 2.3 二项堆 (Binomial Heap)
 
@@ -178,10 +191,14 @@
 
 ## 2.6 实现细节与工程优化设计
 
-1. **CSR 稀疏图存储与快速 I/O**：采用 `head[] + to[] + w[]` 三数组连续内存组织图数据，采用大缓冲区快速整块读取（Fast I/O Buffer）配合自定义字符扫描解析，降低数据载入耗时；
-2. **节点池（Node Pool）内存管理**：为二项堆与斐波那契堆预先分配连续内存池（使用 `std::deque` 保证节点地址有效性），避免了数百万次松弛过程中频繁调用系统 `new/delete` 带来的动态内存分配开销与内存碎片；
-3. **按需局部状态重置（Partial Reset）**：每次查询仅依据 `settled` 列表中记录的访问顶点进行状态回滚，重置开销控制在 $O(\text{Settled})$，避免全图数组全量重置的 $O(|V|)$ 开销；
-4. **统一自包含实现**：所有测试代码均基于 C++17 标准库编写，不依赖第三方库与外部头文件。
+1. **CSR 稀疏图存储与快速 I/O（Fast I/O Buffer）**：
+   采用 `head[] + to[] + w[]` 三数组连续内存组织图数据，出边紧密排布；利用 `fread` 将路网文件一次性全部载入内存缓冲区，配合双指针字符整型扫描函数 `scanInt` 进行无阻塞解析，大幅降低数据载入耗时。
+2. **稳定节点池（Node Pool）内存管理**：
+   二项堆与斐波那契堆基于指针和动态链表构建。为消除高频动态内存分配的开销与内存碎片，采用 `std::deque` 集中管理节点分配。`std::deque` 分段连续存储，扩容时已分配节点的内存地址永久保持稳定，确保堆内部复杂的父子与兄弟指针绝不失效。
+3. **基于实际触碰点（Touched）的按需状态恢复（Partial Reset）**：
+   在早停模式下，部分顶点虽然已被发现并入堆（`seen[v] = 1`），但尚未正式出堆确定（`done[v] == 0`）。因此，代码使用 `touched` 数组记录本轮实际触碰并入堆的所有顶点。查询结束后，仅遍历 `touched` 数组恢复 `done[v] = 0; seen[v] = 0;`，将状态清理开销严格限制在 $O(\text{Touched})$ 实际发现点数级别，避免全图数组全量 `memset` 的 $O(|V|)$ 冗余开销。
+4. **离线同源查询聚类与共享搜索（Offline Query Grouping）**：
+   针对批量查询中可能存在相同起点的情况，设计了 `solveOffline` 算法模板：预先对所有点对以起点编号为关键字排序，使得同源目标归并在连续区间内，仅执行一次单源最短路探索即可满足该起点的全部终点查询，将搜索轮次从输入总点对数 $Q$ 减少到不同起点数 $U$。
 
 ---
 
@@ -189,23 +206,22 @@
 
 ## 3.1 正确性与交叉验证
 
-在 `code/selftest.cpp` 中构建了回归检验体系：
-1. **单元功能测试**：测试插入、删除最小元与多次减键序列；
-2. **压力对拍测试**：将四种堆结构与基于线性扫描的基准实现进行 10 万次随机操作对拍；
-3. **边界情况验证**：测试不可达终点、相同最短距离、零权边等特殊情况；
-4. **SPFA 独立对拍**：在随机图上将四种堆实现的 Dijkstra 最短路径结果与 SPFA 算法进行逐点交叉比对。
+项目在 `code/selftest.cpp` 中构建了自动化回归检验体系，采用 C++ STL 独立的 `std::priority_queue` 作为外部黄金基准（Ground Truth）：
+1. **固定边界拓扑检验**：构造极端小图，严格测试了零权边、自环、平行边、等距并列最短路以及包含不可达顶点的连通分量，验证四种自实现堆的距离计算完全一致；
+2. **30 组随机小图全面对拍**：基于固定随机种子生成 30 组稠密/稀疏随机图，对四种自实现堆与 STL 基准对比全点对最短路矩阵、全图可达顶点总数以及累计距离和，确保无任何分支逻辑偏差；
+3. **离线同源策略正确性验证**：针对离线合并算法，专门构造了包含起点乱序、重复起点、不可达目标及多终点并发的测试用例，验证其输出答案与常规逐条查询在原始下标位置上 100% 吻合；
+4. **测试结论**：程序在编译运行后输出 `ALL TESTS PASSED: four heaps match STL priority_queue`，验证了全部实现的正确性。
 
-| 测试类别 | 测试目的 | 预期表现 | 实测结果 | 状态 |
+| 测试类别 | 测试目的 | 验证方法 / 基准 | 实测结果 | 状态 |
 | :--- | :--- | :--- | :--- | :---: |
-| **Scripted Unit Test** | 验证插入与多次减键顺序 | 按关键字升序弹出 | 完全一致 | **PASS** |
-| **100k Stress Test** | 高频随机操作压力对拍 | 与朴素线性堆一致 | 100,000 次操作零误差 | **PASS** |
-| **Unreachable Target** | 终点不可达极端情况 | 返回 KEY_INF | 正确返回无穷大 | **PASS** |
-| **Zero Weight Arcs** | 零权边与等距路径处理 | 精确收敛至最短路 | 距离计算精确 | **PASS** |
-| **SPFA Cross Validation**| 随机稠密图独立验证 | 与 SPFA 逐点距离相等 | 全点对完全吻合 | **PASS** |
+| **Boundary Graph Test** | 验证零权边、自环、平行边、不可达点 | 确定性预期矩阵对比 | 距离与连通性精确吻合 | **PASS** |
+| **30-Group Random Test**| 随机图高频操作压力测试 | 对比 STL priority_queue 距离和 | 30 组测试零误差 | **PASS** |
+| **Unreachable Target** | 终点不可达极端情况 | 验证返回值是否为 KEY_INF | 正确识别无穷大 | **PASS** |
+| **Offline Grouping Test**| 验证乱序起点、重复源点与结果还原 | 对比普通逐条查询 dump 数组 | 各查询位置答案完全一致 | **PASS** |
 
 ## 3.2 DIMACS 美国道路网络数据集
 
-评测数据集采用第 9 届 DIMACS 算法挑战赛提供的物理距离版本（`.gr.gz` 格式）。数据源链接如下：
+评测数据集严格遵循第 9 届 DIMACS 算法挑战赛（The 9th DIMACS Implementation Challenge）官方物理距离（`.d.gr`）与通行时间（`.t.gr`）规范。官方源下载链接如下：
 
 | 网络代码 | 区域名称 | 顶点数 $|V|$ | 弧数 $|E|$ | 官方源下载链接（.gr.gz 物理距离版本） |
 | :--- | :--- | :---: | :---: | :--- |
@@ -219,11 +235,13 @@
 
 *官方下载索引页*：题目给定链接为 [http://www.dis.uniroma1.it/challenge9/download.shtml](http://www.dis.uniroma1.it/challenge9/download.shtml)（罗马大学该系后来更名为 DIAG，对应更新链接为 [http://www.diag.uniroma1.it/challenge9/download.shtml](http://www.diag.uniroma1.it/challenge9/download.shtml)，两处地址均指向相同数据包）。
 
+**查询生成方案**：使用 `data/gen_queries.cpp`，采用 C++11 标准库 `std::mt19937` 随机数生成器。基础随机种子固定为 `20261017`，加网络列表固定下标以确保确定性复现。每张路网生成 1000 组起点与终点互不相同的随机点对。同一区域的物理距离图与通行时间图采用完全相同的点对集合。
+
 ## 3.3 测试环境与计时规范
 
 - **硬件环境**：Apple M-series 处理器，16 GB 统一架构内存；
-- **操作系统与编译器**：macOS Sequoia，Apple Clang，编译参数 `-O3 -std=c++17`；
-- **计时规范**：使用 `std::chrono::steady_clock`，仅针对算法求解区间进行高精度计时，文件读取与解析不计入算法耗时。
+- **操作系统与编译器**：macOS Sequoia，Apple Clang，编译参数 `-O3 -std=c++11`；
+- **计时规范**：使用 `std::chrono::steady_clock` / `clock()` 进行高精度计时。计时区间严格界定在算法求解段内（对于离线模式，排序、同源分组、搜索与答案收集均计入耗时），文件读取、图构建与结果 CSV 导出完全置于计时范围之外。
 
 ## 3.4 真实道路网络评测结果
 
@@ -296,17 +314,27 @@
 
 ## 4.1 理论复杂度深度推导与势能法摊还分析
 
-### 4.1.1 复杂度总结
-在包含 $n = |V|$ 个顶点、$m = |E|$ 条弧的图中，各堆结构的核心操作与 Dijkstra 总复杂度理论边界对比如下：
+### 4.1.1 复杂度对比汇总
+在包含 $n = |V|$ 个顶点、$m = |E|$ 条弧的图中，各堆结构的核心操作理论边界对比如下：
 
 | 操作 / 算法 | 经典二叉堆 | 二项堆 | 斐波那契堆 |
 | :--- | :---: | :---: | :---: |
 | **Insert** | $O(\log n)$ | 最坏 $O(\log n)$ / 摊还 $O(1)$ | **摊还 $O(1)$** |
 | **Extract-Min** | $O(\log n)$ | $O(\log n)$ | **摊还 $O(\log n)$** |
 | **Decrease-Key** | $O(\log n)$ | $O(\log n)$ | **摊还 $O(1)$** |
-| **Dijkstra 总复杂度** | $O((m + n) \log n)$ | $O((m + n) \log n)$ | **$O(m + n \log n)$** |
+| **Dijkstra 单次总复杂度** | $O((m + n) \log n)$ | $O((m + n) \log n)$ | **$O(m + n \log n)$** |
 
-### 4.1.2 势能函数与摊还代价严格推导
+### 4.1.2 批量查询与离线同源策略的理论对比
+设图有 $n$ 个顶点、$m$ 条弧，输入 $Q$ 组点对查询，其中包含 $U$ 个互不相同的起点（$1 \le U \le Q$）：
+1. **普通逐点对查询（最坏遍历全图）**：
+   - 经典二叉堆与二项堆：总时间复杂度为 $O(Q(n + m) \log n)$；
+   - 斐波那契堆：总时间复杂度为 $O(Q(m + n \log n))$。
+2. **离线同源合并策略 (Offline Grouping)**：
+   - 预处理排序耗时为 $O(Q \log Q)$；
+   - 随后仅对 $U$ 个不同起点各执行一次完整单源遍历，二叉堆总耗时为 $O(Q \log Q + U(n + m) \log n)$，斐波那契堆总耗时为 $O(Q \log Q + U(m + n \log n))$。
+   - **理论与实际权衡**：在高度集中的查询分布（如 $U \ll Q$）中，离线策略消除了近 $Q - U$ 次重复搜索，带来极大的理论加速；但若起点几乎完全分散（$U \approx Q$），由于完整遍历无法享受终点早停带来的剪枝收益，实际耗时可能反超普通早停模式。
+
+### 4.1.3 势能函数与各项操作摊还代价严格推导
 定义斐波那契堆 $H$ 的势能函数为：
 $$\Phi(H) = t(H) + 2 m(H)$$
 其中 $t(H)$ 表示根链表中树的棵数，$m(H)$ 表示堆中被标记节点（`mark == true`）的数量。空堆势能为 0，且任意时刻 $\Phi(H) \ge 0$。
@@ -342,7 +370,7 @@ $$\hat{c} = c + \Delta \Phi = c + \Phi(H_{\text{after}}) - \Phi(H_{\text{before}
      $$\hat{c}_{\text{extract-min}} = c + \Delta \Phi \le O(D(n) + t(H)) + (D(n) + 1 - t(H)) = O(D(n))$$
    合并整理过程中消耗的线性扫描时间 $O(t(H))$ 被根树数量大幅减少带来的负势能变化（$-t(H)$）所抵消。
 
-### 4.1.3 最大度数对数界限定理证明
+### 4.1.4 最大度数对数界限定理证明
 **引理 1**：设 $x$ 为斐波那契堆中任意节点，度数为 $k$。将其现存子节点按照被链接到 $x$ 上的先后时间顺序排序记为 $y_1, y_2, \dots, y_k$。则对任意 $i \ge 2$，必有：
 $$\text{degree}(y_i) \ge i - 2$$
 
@@ -404,7 +432,7 @@ $$k \le \log_\phi n = \frac{\ln n}{\ln \phi} \approx 1.4404 \log_2 n$$
 3. **实验表明**：原生 Decrease-Key 机制在更新密集场景下能够有效避免堆节点过度膨胀，具有确定的渐近复杂度保证。
 
 ### 4.3.2 实验二：状态清理策略消融实验 (Full Reset vs. Partial Reset)
-在 NY 道路网络（26 万顶点）上，对比了全量重置数组（$O(|V|)$）与依据本次访问记录进行按需重置（$O(\text{Settled})$）的耗时差异：
+在 NY 道路网络（26 万顶点）上，对比了全量重置数组（$O(|V|)$）与依据本次访问记录进行按需重置（$O(\text{Touched})$）的耗时差异：
 
 | 搜索规模分类 | Full Reset 耗时 (ms) | Partial Reset 耗时 (ms) | 加速比 |
 | :--- | :---: | :---: | :---: |
@@ -435,6 +463,7 @@ $$k \le \log_\phi n = \frac{\ln n}{\ln \phi} \approx 1.4404 \log_2 n$$
 综合理论分析与实验数据，提出以下优先队列选型参考：
 - **道路网及稀疏图**：推荐使用**惰性删除二叉堆（Lazy Binary Heap）**或**经典索引二叉堆**，具有较小的常数和良好的缓存局部性；
 - **更新密集型拓扑或稠密图**：应采用**支持原地减键的索引二叉堆**或**斐波那契堆**，以避免惰性删除策略带来的堆膨胀与退化风险；
+- **批量同源查询场景**：优先采用**离线排序与同源分组优化（Offline Grouping）**，以单次遍历共享服务多个目标，显著缩减无效的重复全图探索；
 - **理论算法设计**：在 Prim 最小生成树算法及网络流等减键占主导的算法证明中，斐波那契堆具备明确的理论上界保障。
 
 ## 4.5 实验局限性与未来展望
@@ -447,28 +476,34 @@ $$k \le \log_\phi n = \frac{\ln n}{\ln \phi} \approx 1.4404 \log_2 n$$
 
 ## 附录 A：核心源代码实现
 
-以下给出项目中四种优先队列结构及 Dijkstra 算法核心实现代码。所有实现基于 C++17 标准库，包含完整的类设计与关键步骤注释。
+以下给出项目中对应最新仓库（`code/heaps.h`、`code/dijkstra.h`、`code/offline.h`）的核心源码实现。全部基于 C++11/C++17 标准库编写，包含完整的类设计与逐行详尽注释。
 
-### 1. 经典索引二叉堆 (Binary Heap)
+### 1. 四大优先队列核心实现 (`code/heaps.h`)
 
 ```cpp
+#ifndef HEAPS_H
+#define HEAPS_H
+
+#include <deque>
 #include <vector>
-#include <algorithm>
+#include <utility>
 
+using namespace std;
 typedef long long Key;
+const Key KEY_INF = 1LL << 60;
 
-// 基于一维动态数组实现的二叉最小堆
-// 通过维护 pos 数组记录顶点在堆数组中的位置，支持 O(log n) 的原地 decrease-key
-class BinaryHeap {
-public:
-	explicit BinaryHeap(int n = 0) {
+// =============================================================================
+//  1. 经典索引二叉堆（数组完全二叉树 + pos 映射，支持 O(log n) decrease-key）
+// =============================================================================
+struct BinaryHeap {
+	BinaryHeap(int n = 0) {
 		init(n);
 	}
 
-	// 初始化堆容量及位置映射数组
+	// 按顶点编号分配索引空间，所有顶点初始都不在堆中
 	void init(int n) {
-		key.assign(n + 1, 0);
-		pos.assign(n + 1, -1); // -1 表示顶点当前不在堆中
+		key.assign(n + 1, 0);   // 有效性由位置索引决定，键值无需统一设为无穷
+		pos.assign(n + 1, -1);  // -1 表示尚未入堆
 		heap.clear();
 		touched.clear();
 		heap.reserve(n + 1);
@@ -476,7 +511,7 @@ public:
 		cmp_cnt = 0;
 	}
 
-	// 仅重置本次查询访问过的顶点位置映射，实现 O(Touched) 的按需清理
+	// 只恢复本轮涉及的索引并复用已有容量，避免逐轮重新分配内存
 	void clear() {
 		for (size_t i = 0; i < touched.size(); i ++ ) {
 			pos[touched[i]] = -1;
@@ -505,7 +540,7 @@ public:
 		return cmp_cnt;
 	}
 
-	// 插入新顶点，加入末尾后执行上浮，时间复杂度 O(log n)
+	// 插入新顶点，加入数组尾部后上浮调整
 	void insert(int v, Key k) {
 		key[v] = k;
 		pos[v] = (int)heap.size();
@@ -514,13 +549,13 @@ public:
 		siftUp((int)heap.size() - 1);
 	}
 
-	// 原地减键：依据 pos 数组定位后上浮，时间复杂度 O(log n)
+	// 原地减键：根据 pos 定位后沿父链上浮调整
 	void decreaseKey(int v, Key k) {
 		key[v] = k;
 		siftUp(pos[v]);
 	}
 
-	// 弹出堆顶最小值，将末尾移至堆顶后执行下沉，时间复杂度 O(log n)
+	// 弹出最小候选距离，尾元素补根后下沉调整
 	int extractMin() {
 		int top = heap[0];
 		int last = heap.back();
@@ -534,8 +569,7 @@ public:
 		return top;
 	}
 
-private:
-	// 上浮调整：与父节点比较，同步更新 pos 映射
+	// 节点上浮调整，同步维护父子节点的 pos 反向映射
 	void siftUp(int i) {
 		int v = heap[i];
 		Key k = key[v];
@@ -554,7 +588,7 @@ private:
 		pos[v] = i;
 	}
 
-	// 下沉调整：选取较小子节点交换，同步更新 pos 映射
+	// 节点下沉调整，每次选择较小孩子上移
 	void siftDown(int i) {
 		int n = (int)heap.size();
 		int v = heap[i];
@@ -564,9 +598,8 @@ private:
 			if (c >= n) {
 				break;
 			} else {
-				// 选取左右子节点中的较小者
 				if (c + 1 < n && lessKey(key[heap[c + 1]], key[heap[c]])) {
-					c ++ ;
+					c ++ ; // 右孩子更小时选取右孩子
 				}
 				if (!lessKey(key[heap[c]], k)) {
 					break;
@@ -586,26 +619,17 @@ private:
 		return a < b;
 	}
 
-	std::vector<Key> key;       // 各顶点当前记录的键值
-	std::vector<int> pos;       // 顶点在堆数组中的下标映射
-	std::vector<int> heap;      // 存储顶点编号的完全二叉树数组
-	std::vector<int> touched;   // 本轮查询中触碰过的顶点，供按需清理
-	long long cmp_cnt = 0;      // 键值比较计数器
+	vector<Key> key;       // 各顶点当前候选距离
+	vector<int> pos;       // 顶点在堆数组中的下标映射
+	vector<int> heap;      // 存储顶点编号的完全二叉树数组
+	vector<int> touched;   // 记录本轮涉及的顶点
+	long long cmp_cnt = 0;  // 键值比较计数器
 };
-```
 
-### 2. 二项堆 (Binomial Heap)
-
-```cpp
-#include <vector>
-#include <deque>
-#include <algorithm>
-
-typedef long long Key;
-
-// 二项堆实现：由一组严格按度数升序排列的二项树构成
-class BinomialHeap {
-public:
+// =============================================================================
+//  2. 二项堆（严格二项树森林，根链表按度数升序排列）
+// =============================================================================
+struct BinomialHeap {
 	struct Node {
 		Key key;
 		int v;
@@ -615,7 +639,7 @@ public:
 		Node *sibling;
 	};
 
-	explicit BinomialHeap(int n = 0) {
+	BinomialHeap(int n = 0) {
 		init(n);
 	}
 
@@ -631,7 +655,6 @@ public:
 		cmp_cnt = 0;
 	}
 
-	// 按需重置已触碰的节点指针
 	void clear() {
 		for (size_t i = 0; i < touched.size(); i ++ ) {
 			int v = touched[i];
@@ -660,7 +683,6 @@ public:
 		return cmp_cnt;
 	}
 
-	// 插入新节点：构建 B_0 二项树并与原堆执行合并
 	void insert(int v, Key k) {
 		Node *x = alloc();
 		x->key = k;
@@ -676,21 +698,21 @@ public:
 		total_size ++ ;
 	}
 
-	// 减键操作：减小键值后沿父指针向上冒泡交换，耗时 O(log n)
+	// 减键沿父指针向上冒泡交换键值与顶点编号
 	void decreaseKey(int v, Key k) {
 		Node *x = handle[v];
 		x->key = k;
 		while (x->parent && lessKey(x->key, x->parent->key)) {
 			Node *p = x->parent;
-			std::swap(x->key, p->key);
-			std::swap(x->v, p->v);
+			swap(x->key, p->key);
+			swap(x->v, p->v);
 			handle[x->v] = x;
 			handle[p->v] = p;
 			x = p;
 		}
 	}
 
-	// 提取最小根：摘除最小根并将子树链表逆序排列后合并，耗时 O(log n)
+	// 弹出最小根：摘除最小根并将子树链表逆序排列后合并
 	int extractMin() {
 		Node *prev = nullptr;
 		Node *minNd = nullptr;
@@ -713,7 +735,6 @@ public:
 		in[v] = 0;
 		total_size -- ;
 
-		// 将子树链表逆序（使度数按递增排列），准备与主根链表合并
 		Node *ch = minNd->child;
 		Node *rev = nullptr;
 		while (ch) {
@@ -728,8 +749,7 @@ public:
 		return v;
 	}
 
-private:
-	// 从连续内存池分配节点，避免系统 new 开销
+	// 复用稳定地址的对象池，避免高频系统分配
 	Node* alloc() {
 		if ((size_t)nfree >= pool.size()) {
 			pool.emplace_back();
@@ -756,7 +776,6 @@ private:
 		return dummy.sibling;
 	}
 
-	// 将二项树 y 链接到 z 下作为子树（z 为较小根）
 	void link(Node *y, Node *z) {
 		y->parent = z;
 		y->sibling = z->child;
@@ -764,7 +783,7 @@ private:
 		z->degree ++ ;
 	}
 
-	// 归并消除连续同阶树的主合并例程
+	// 合并根链表消除同阶相邻树
 	Node* unionLists(Node *a, Node *b) {
 		Node *h = mergeRoots(a, b);
 		if (!h) {
@@ -800,29 +819,20 @@ private:
 		return a < b;
 	}
 
-	std::deque<Node> pool;          // 预分配节点池（使用 deque 保证节点地址有效）
-	std::vector<Node*> handle;      // 顶点到堆节点的直接指针映射
-	std::vector<char> in;           // 顶点是否在堆中标记
-	std::vector<int> touched;       // 触碰过的顶点列表
-	Node *head = nullptr;           // 根链表头指针
-	int nfree = 0;                  // 内存池空闲游标
-	int total_size = 0;             // 堆中元素数量
-	long long cmp_cnt = 0;          // 比较次数计数
+	deque<Node> pool;       // 使用 deque 保证扩容时节点指针地址永久稳定
+	vector<Node*> handle;
+	vector<char> in;
+	vector<int> touched;
+	Node *head = nullptr;
+	int nfree = 0;
+	int total_size = 0;
+	long long cmp_cnt = 0;
 };
-```
 
-### 3. 斐波那契堆 (Fibonacci Heap)
-
-```cpp
-#include <vector>
-#include <deque>
-#include <algorithm>
-
-typedef long long Key;
-
-// 斐波那契堆实现：双向循环链表 + 级联剪切 + 延迟合并
-class FibonacciHeap {
-public:
+// =============================================================================
+//  3. 斐波那契堆（双向循环链表 + 级联剪枝 + 延迟合并）
+// =============================================================================
+struct FibonacciHeap {
 	struct Node {
 		Key key;
 		int v;
@@ -834,7 +844,7 @@ public:
 		Node *right;
 	};
 
-	explicit FibonacciHeap(int n = 0) {
+	FibonacciHeap(int n = 0) {
 		init(n);
 	}
 
@@ -882,7 +892,7 @@ public:
 		return cmp_cnt;
 	}
 
-	// 插入操作：直接加入根循环链表，耗时 O(1)
+	// 插入操作：直接加入根循环双链表，耗时 O(1)
 	void insert(int v, Key k) {
 		Node *x = alloc();
 		x->key = k;
@@ -897,7 +907,6 @@ public:
 		if (!min_node) {
 			min_node = x;
 		} else {
-			// 插入到 min_node 的右侧
 			x->left = min_node;
 			x->right = min_node->right;
 			min_node->right->left = x;
@@ -912,7 +921,7 @@ public:
 		total_size ++ ;
 	}
 
-	// 减键操作：若破坏堆序执行切断与级联剪切，摊还耗时 O(1)
+	// 减键操作：若破坏堆序执行切断与级联剪切，均摊耗时 O(1)
 	void decreaseKey(int v, Key k) {
 		Node *x = handle[v];
 		x->key = k;
@@ -926,12 +935,11 @@ public:
 		}
 	}
 
-	// 提取最小根：子节点提升到根链表后执行 consolidate 合并，摊还耗时 O(log n)
+	// 提取最小根：提升子节点到根表，执行 consolidate 树归并
 	int extractMin() {
 		Node *z = min_node;
 		int v = z->v;
 
-		// 将 z 的所有子节点挂入根循环链表
 		Node *c = z->child;
 		if (c) {
 			do {
@@ -946,7 +954,6 @@ public:
 			z->child = nullptr;
 		}
 
-		// 从根链表中摘除 z
 		z->left->right = z->right;
 		z->right->left = z->left;
 
@@ -954,7 +961,7 @@ public:
 			min_node = nullptr;
 		} else {
 			min_node = z->right;
-			consolidate(); // 集中合并同度数树
+			consolidate();
 		}
 
 		handle[v] = nullptr;
@@ -963,7 +970,6 @@ public:
 		return v;
 	}
 
-private:
 	Node* alloc() {
 		if ((size_t)nfree >= pool.size()) {
 			pool.emplace_back();
@@ -986,7 +992,6 @@ private:
 		x->parent = nullptr;
 		x->mark = false;
 
-		// 挂入根循环链表
 		x->left = min_node->left;
 		x->right = min_node;
 		min_node->left->right = x;
@@ -998,9 +1003,9 @@ private:
 		Node *z = y->parent;
 		if (z) {
 			if (!y->mark) {
-				y->mark = true; // 第一次失去孩子，打标记
+				y->mark = true;
 			} else {
-				cut(y, z);       // 第二次失去孩子，切除并向上传播
+				cut(y, z);
 				cascadingCut(z);
 			}
 		}
@@ -1022,9 +1027,9 @@ private:
 			while (d < (int)A.size() && A[d]) {
 				Node *y = A[d];
 				if (lessKey(y->key, x->key)) {
-					std::swap(x, y);
+					swap(x, y);
 				}
-				linkFib(y, x); // 将 y 链接为 x 的子树
+				linkFib(y, x);
 				A[d] = nullptr;
 				d ++ ;
 			}
@@ -1060,7 +1065,6 @@ private:
 		used.clear();
 	}
 
-	// 将根 y 挂为根 x 的子节点
 	void linkFib(Node *y, Node *x) {
 		y->left->right = y->right;
 		y->right->left = y->left;
@@ -1084,28 +1088,124 @@ private:
 		return a < b;
 	}
 
-	std::deque<Node> pool;
-	std::vector<Node*> handle;
-	std::vector<char> in;
-	std::vector<int> touched;
-	std::vector<Node*> A;          // 辅助度数数组
-	std::vector<int> used;         // 记录使用过的度数下标供清空
-	std::vector<Node*> roots;        // 整理前收集的根节点集合
+	deque<Node> pool;
+	vector<Node*> handle;
+	vector<char> in;
+	vector<int> touched;
+	vector<Node*> A;
+	vector<int> used;
+	vector<Node*> roots;
 	Node *min_node = nullptr;
 	int nfree = 0;
 	int total_size = 0;
 	long long cmp_cnt = 0;
 };
+
+// =============================================================================
+//  4. 惰性删除二叉堆（Lazy Binary Heap）
+// =============================================================================
+struct LazyBinaryHeap {
+	LazyBinaryHeap(int = 0) {}
+
+	void clear() {
+		key.clear();
+		ver.clear();
+	}
+
+	bool empty() const {
+		return key.empty();
+	}
+
+	void push(int v, Key k) {
+		key.push_back(k);
+		ver.push_back(v);
+		siftUp((int)key.size() - 1);
+	}
+
+	int extractMin(Key &outKey) {
+		int v = ver[0];
+		outKey = key[0];
+		Key lk = key.back();
+		int lv = ver.back();
+		key.pop_back();
+		ver.pop_back();
+		if (!key.empty()) {
+			key[0] = lk;
+			ver[0] = lv;
+			siftDown(0);
+		}
+		return v;
+	}
+
+	long long cmps() const {
+		return cmp_cnt;
+	}
+
+	void siftUp(int i) {
+		Key k = key[i];
+		int v = ver[i];
+		while (i > 0) {
+			int p = (i - 1) >> 1;
+			if (!lessKey(k, key[p])) {
+				break;
+			} else {
+				key[i] = key[p];
+				ver[i] = ver[p];
+				i = p;
+			}
+		}
+		key[i] = k;
+		ver[i] = v;
+	}
+
+	void siftDown(int i) {
+		int n = (int)key.size();
+		Key k = key[i];
+		int v = ver[i];
+		for (;;) {
+			int c = 2 * i + 1;
+			if (c >= n) {
+				break;
+			} else {
+				if (c + 1 < n && lessKey(key[c + 1], key[c])) {
+					c ++ ;
+				}
+				if (!lessKey(key[c], k)) {
+					break;
+				} else {
+					key[i] = key[c];
+					ver[i] = ver[c];
+					i = c;
+				}
+			}
+		}
+		key[i] = k;
+		ver[i] = v;
+	}
+
+	bool lessKey(Key a, Key b) const {
+		cmp_cnt ++ ;
+		return a < b;
+	}
+
+	vector<Key> key;
+	vector<int> ver;
+	mutable long long cmp_cnt = 0;
+};
+
+#endif
 ```
 
-### 4. 统一 Dijkstra 求解引擎 (DijkstraRunner)
+### 2. 图结构、适配器与统一 Dijkstra 求解引擎 (`code/dijkstra.h`)
 
 ```cpp
+#ifndef DIJKSTRA_H
+#define DIJKSTRA_H
+
 #include <vector>
+#include "heaps.h"
 
-const Key KEY_INF = 1LL << 60;
-
-// CSR 紧凑格式图结构
+// CSR 紧凑邻接表结构
 struct Graph {
 	int n = 0;
 	std::vector<int> head;
@@ -1113,77 +1213,200 @@ struct Graph {
 	std::vector<int> w;
 };
 
-// 统一 Dijkstra 求解引擎模板类
-template <class Heap>
-class DijkstraRunner {
-public:
-	explicit DijkstraRunner(const Graph& g)
-		: g_(g), dist(g.n + 1, 0), done(g.n + 1, 0), heap(g.n) {
-		settled.reserve(g.n + 1);
+// 堆操作统一适配器：常规堆原地更新
+template <typename Heap>
+struct HeapAccess {
+	static void insert(Heap& heap, int v, Key k) { heap.insert(v, k); }
+	static void decrease(Heap& heap, int v, Key k) { heap.decreaseKey(v, k); }
+	static int pop(Heap& heap, Key& k, const std::vector<Key>& dist) {
+		int u = heap.extractMin();
+		k = dist[u];
+		return u;
 	}
+	static const bool lazy = false;
+};
 
-	// 求解最短路径：s 为源点，t 为终点，full 为 true 时遍历全连通图
-	Key run(int s, int t, bool full) {
+// 堆操作统一适配器：惰性堆重复插入
+template <>
+struct HeapAccess<LazyBinaryHeap> {
+	static void insert(LazyBinaryHeap& heap, int v, Key k) { heap.push(v, k); }
+	static void decrease(LazyBinaryHeap& heap, int v, Key k) { heap.push(v, k); }
+	static int pop(LazyBinaryHeap& heap, Key& k, const std::vector<Key>&) {
+		return heap.extractMin(k);
+	}
+	static const bool lazy = true;
+};
+
+// 微观操作计数器
+struct DijkstraStats {
+	long long pops = 0, pushes = 0, decs = 0, arcScans = 0, cmps = 0, settled = 0;
+	unsigned long long sumDist = 0;
+};
+
+// 统一模板驱动的 Dijkstra 求解引擎
+template <typename Heap>
+struct DijkstraRunner {
+	DijkstraRunner(const Graph& g)
+		: g_(g), dist(g.n + 1, KEY_INF), done(g.n + 1, 0), seen(g.n + 1, 0), heap(g.n) {}
+
+	// 主搜索例程：支持普通点对早停与离线多目标收集
+	Key run(int s, int t, bool full, DijkstraStats& st,
+			const std::vector<int>* targets = nullptr, std::vector<Key>* answers = nullptr) {
+		long long c0 = heap.cmps();
 		heap.clear();
-		heap.insert(s, 0);
+		touched.push_back(s);
+		seen[s] = 1;
 		dist[s] = 0;
-		Key ans = KEY_INF;
+		HeapAccess<Heap>::insert(heap, s, 0);
+		st.pushes ++ ;
+		Key answer = KEY_INF;
 
 		while (!heap.empty()) {
-			int u = heap.extractMin();
+			Key k;
+			int u = HeapAccess<Heap>::pop(heap, k, dist);
+			st.pops ++ ;
+			// 惰性堆过期条目过滤
+			if (done[u] || k != dist[u]) {
+				continue;
+			}
 			done[u] = 1;
-			settled.push_back(u);
+			st.settled ++ ;
+			st.sumDist += (unsigned long long)k;
 
-			// 点对模式下的目标早停机制
+			// 目标早停判断
 			if (!full && u == t) {
-				ans = dist[u];
+				answer = k;
 				break;
 			}
 
-			Key du = dist[u];
+			// 出边松弛循环
 			for (int i = g_.head[u]; i < g_.head[u + 1]; i ++ ) {
+				st.arcScans ++ ;
 				int v = g_.to[i];
 				if (done[v]) {
 					continue;
 				}
-				Key nd = du + g_.w[i];
-				if (heap.contains(v)) {
-					// 顶点已在堆中，若距离变短则执行减键
-					if (nd < heap.keyOf(v)) {
-						heap.decreaseKey(v, nd);
-						dist[v] = nd;
-					}
-				} else {
-					// 顶点首次被发现，插入优先队列
+				Key nd = k + g_.w[i];
+				if (!seen[v]) {
+					seen[v] = 1;
+					touched.push_back(v);
 					dist[v] = nd;
-					heap.insert(v, nd);
+					HeapAccess<Heap>::insert(heap, v, nd);
+					st.pushes ++ ;
+				} else if (nd < dist[v]) {
+					dist[v] = nd;
+					HeapAccess<Heap>::decrease(heap, v, nd);
+					st.decs ++ ;
+					if (HeapAccess<Heap>::lazy) {
+						st.pushes ++ ;
+					}
 				}
 			}
 		}
 
-		// 按需局部重置：仅清除本轮被确定的顶点标记，避免全图 O(|V|) 扫描
-		for (size_t i = 0; i < settled.size(); i ++ ) {
-			done[settled[i]] = 0;
+		// 离线同源查询答案批量回填
+		if (targets && answers) {
+			answers->clear();
+			for (int v : *targets) {
+				answers->push_back(seen[v] ? dist[v] : KEY_INF);
+			}
 		}
-		settled.clear();
-		return ans;
+
+		// 按需局部重置：仅清除本轮被发现顶点的标记，复杂度严格为 O(Touched)
+		for (int v : touched) {
+			done[v] = 0;
+			seen[v] = 0;
+		}
+		touched.clear();
+		st.cmps += heap.cmps() - c0;
+		return answer;
 	}
 
-private:
 	const Graph& g_;
 	std::vector<Key> dist;
-	std::vector<char> done;
-	std::vector<int> settled;
+	std::vector<char> done, seen;
+	std::vector<int> touched;
 	Heap heap;
 };
+
+#endif
+```
+
+### 3. 离线同源查询聚类与共享搜索算法 (`code/offline.h`)
+
+```cpp
+#ifndef OFFLINE_H
+#define OFFLINE_H
+
+#include <vector>
+#include <algorithm>
+#include "dijkstra.h"
+
+// 记录原查询下标，供答案顺序还原
+struct OfflineQuery {
+	int source;
+	int target;
+	size_t index;
+};
+
+struct OfflineResult {
+	std::vector<Key> answers;
+	DijkstraStats stats;
+	size_t runs = 0; // 实际执行的单源遍历次数
+};
+
+// 离线同源分组算法：按起点排序，共享完整搜索
+template <typename Heap>
+OfflineResult solveOffline(DijkstraRunner<Heap>& runner,
+                           const std::vector<int>& sources, const std::vector<int>& targets) {
+	OfflineResult result;
+	result.answers.resize(sources.size(), KEY_INF);
+	std::vector<OfflineQuery> queries;
+	queries.reserve(sources.size());
+	for (size_t i = 0; i < sources.size(); i ++ ) {
+		queries.push_back({sources[i], targets[i], i});
+	}
+
+	// 按源点优先、原下标次之排序
+	std::sort(queries.begin(), queries.end(), [](const OfflineQuery& a, const OfflineQuery& b) {
+		return a.source != b.source ? a.source < b.source : a.index < b.index;
+	});
+
+	// 按相同起点聚类批次处理
+	for (size_t begin = 0; begin < queries.size();) {
+		size_t end = begin + 1;
+		while (end < queries.size() && queries[end].source == queries[begin].source) {
+			end ++ ;
+		}
+		std::vector<int> groupTargets;
+		groupTargets.reserve(end - begin);
+		for (size_t i = begin; i < end; i ++ ) {
+			groupTargets.push_back(queries[i].target);
+		}
+		std::vector<Key> groupAnswers;
+
+		// 对同源目标执行单次完整单源遍历
+		runner.run(queries[begin].source, -1, true, result.stats, &groupTargets, &groupAnswers);
+		result.runs ++ ;
+
+		// 将答案还原至原查询下标
+		for (size_t i = begin; i < end; i ++ ) {
+			result.answers[queries[i].index] = groupAnswers[i - begin];
+		}
+		begin = end;
+	}
+	return result;
+}
+
+#endif
 ```
 
 ## 附录 B：小组成员分工
 
 | 姓名 | 学号 | 承担任务与贡献比例 |
 | :---: | :---: | :--- |
-| **【成员1】** | 【学号1】 | 四种优先队列与统一 Dijkstra 模板引擎实现、人工三层图极端减键控制实验设计与实现 (40%) |
-| **【成员2】** | 【学号2】 | DIMACS 道路网基准测试执行、正确性回归测试、状态重置消融实验与 SPFA 对拍程序 (30%) |
-| **【成员3】** | 【学号3】 | 报告撰写与实验分析、势能法与斐波那契度数上界归纳推导、数据可视化图表绘制与排版 (30%) |
+| **【成员1】** | 【学号1】 | 四种优先队列与统一 DijkstraRunner 模板引擎设计、人工三层图减键控制实验设计与实现 (40%) |
+| **【成员2】** | 【学号2】 | DIMACS 道路网基准测试执行、离线同源优化策略与 STL priority_queue 自动化回归对拍程序 (30%) |
+| **【成员3】** | 【学号3】 | 报告撰写与实验分析、势能法与斐波那契度数上界推导、数据可视化图表绘制与排版 (30%) |
 
 *注：若为独立完成项目，最终提交前可调整本表为个人独立声明。*
