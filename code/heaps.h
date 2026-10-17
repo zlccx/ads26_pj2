@@ -162,12 +162,12 @@ struct BinaryHeap {
 // 二项堆由不同阶数的二项树组成，根链表按阶数排列
 // 一棵阶数为 k 的二项树包含二的 k 次方个节点
 // 同阶树合并时以较小根作为新父节点
-// 插入单节点相当于与一个零阶二项树合并
+// 插入只从零阶开始连续进位，遇到不同阶的根就停止
 // 根表遇到连续三个同阶根时要避免破坏阶数顺序
 // 减键沿父链交换键值和顶点编号，因此节点映射也要交换
 // 弹出最小根需要先扫描所有根，不依赖缓存最小指针
 // 摘下最小根后逆转孩子链表，再与剩余根表归并
-// 节点池复用保留历史容量，clear 不逐个释放节点
+// 节点池复用已分配空间，clear 不逐个释放节点
 // 该实现只用于非负权 Dijkstra，不提供删除任意键的接口
 struct BinomialHeap {
 	struct Node {
@@ -241,7 +241,17 @@ struct BinomialHeap {
 		handle[v] = x;
 		in[v] = 1;
 		touched.push_back(v);
-		head = unionLists(head, x);
+		// 新节点从零阶开始进位，后续不同阶的根无需扫描
+		while (head && head->degree == x->degree) {
+			Node *y = head;
+			head = y->sibling;
+			if (lessKey(y->key, x->key)) {
+				swap(x, y);
+			}
+			link(y, x);
+		}
+		x->sibling = head;
+		head = x;
 		total_size ++ ; // 插入增加有效元素数，节点池容量不代表堆大小
 	}
 
@@ -298,7 +308,7 @@ struct BinomialHeap {
 
 	// 复用稳定地址的节点池，避免每次插入都申请独立内存
 	Node* alloc() {
-		if ((size_t)nfree >= pool.size()) { // 只有历史容量不足时才扩展节点池
+		if ((size_t)nfree >= pool.size()) { // 只有已分配容量不足时才扩展节点池
 			pool.emplace_back();
 		}
 		return &pool[(size_t)nfree ++ ]; // 返回池内稳定地址，不能使用会移动节点的数组
@@ -368,7 +378,7 @@ struct BinomialHeap {
 	}
 
 	deque<Node> pool; // 双端队列扩容后已有节点地址保持有效
-	vector<Node*> handle;
+	vector<Node*> handle; // 按顶点编号保存节点指针，减键时直接查数组
 	vector<char> in;
 	vector<int> touched; // 记录本轮涉及的顶点，使清理只访问实际使用的索引
 	Node *head = nullptr; // 根链表入口，根节点按度数有序连接
@@ -536,7 +546,7 @@ struct FibonacciHeap {
 
 	// 复用稳定地址的节点池，避免每次插入都申请独立内存
 	Node* alloc() {
-		if ((size_t)nfree >= pool.size()) { // 只有历史容量不足时才扩展节点池
+		if ((size_t)nfree >= pool.size()) { // 只有已分配容量不足时才扩展节点池
 			pool.emplace_back();
 		}
 		return &pool[(size_t)nfree ++ ]; // 返回池内稳定地址，不能使用会移动节点的数组
@@ -656,7 +666,7 @@ struct FibonacciHeap {
 	}
 
 	deque<Node> pool; // 双端队列扩容后已有节点地址保持有效
-	vector<Node*> handle;
+	vector<Node*> handle; // 按顶点编号保存节点指针，减键时直接查数组
 	vector<char> in;
 	vector<int> touched; // 记录本轮涉及的顶点，使清理只访问实际使用的索引
 	vector<Node*> A; // 按节点度数索引的临时归并表
@@ -695,7 +705,7 @@ struct LazyBinaryHeap {
 		return key.empty();
 	}
 
-	// 惰性堆允许同一顶点重复入堆，旧记录由搜索层识别
+	// 惰性堆允许同一顶点重复入堆，失效记录由搜索层识别
 	void push(int v, Key k) {
 		key.push_back(k);
 		ver.push_back(v);

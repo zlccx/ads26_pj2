@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""下载全部 24 份 DIMACS 路网并解压到 data/assets/d 和 data/assets/t。"""
+"""默认下载七张 d 图及三张 t 图；-full 下载全部二十四张 DIMACS 路网。"""
 
 import argparse
 import gzip
@@ -73,6 +73,7 @@ def prepare(kind, net, output, assets, retries):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-full', action='store_true', help='下载全部 12 个区域的 d/t，共 24 张图')
     parser.add_argument('--workers', type=int, default=4, help='并行下载数，默认 4')
     parser.add_argument('--retries', type=int, default=3, help='每个文件最多尝试次数，默认 3')
     parser.add_argument('--out', type=Path, default=DEFAULT_OUT, help='输出目录，默认项目 tmp/')
@@ -82,13 +83,14 @@ def main():
         parser.error('--workers and --retries must be positive')
     args.out.mkdir(parents=True, exist_ok=True)
     print('Output:', args.out.resolve(), flush=True)
-    networks = NETWORKS
-    total = 2 * len(networks)
+    datasets = [(kind, net) for kind in ['d', 't']
+                for net in (NETWORKS if args.full else NETWORKS[:7 if kind == 'd' else 3])]
+    total = len(datasets)
     print('%d archives; existing nonempty files are skipped.' % total, flush=True)
     failures = 0
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
         jobs = [pool.submit(prepare, kind, net, args.out, args.assets, args.retries)
-                for kind in ['d', 't'] for net in networks]
+                for kind, net in datasets]
         for completed, job in enumerate(as_completed(jobs), 1):
             try:
                 print('[%d/%d] %s' % (completed, total, job.result()), flush=True)

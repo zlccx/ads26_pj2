@@ -2,7 +2,7 @@
 
 > **此文档为详细说明，简单复现实验请参考 [GUIDE.md](GUIDE.md)**
 
-实现二叉堆、二项堆、斐波那契堆和惰性删除二叉堆，使用真实 USA 路网与人工图比较性能
+实现二叉堆、二项堆、斐波那契堆和惰性删除二叉堆，使用真实 USA 路网比较性能
 
 所有 C++ 程序采用 **C++11**，仅使用标准库；数据下载和解压脚本使用 Python 3 标准库
 以下命令均在项目根目录运行
@@ -15,9 +15,7 @@ data/
   assets/t/USA-road-t.<网络名>.gr   # 通行时间边权
   queries/d/<网络名>.in            # distance 点对查询
   queries/t/<网络名>.in            # travel time 点对查询
-  queries/custom/                 # 人工图和对应点对查询
   gen_queries.cpp                 # 路网查询生成器
-  gen_custom.cpp                  # 人工图生成器
 tmp/
   prepare_data.py                  # 全量下载与解压脚本
   USA-road-*.gr.gz                 # 下载缓存，不随报告提交
@@ -32,7 +30,7 @@ tmp/
 python tmp/prepare_data.py
 ```
 
-默认以 4 个并行任务处理官网全部 12 个网络的 distance、travel time 两个版本，共 24 个压缩包。
+默认以 4 个并行任务处理 NY 到 CAL 的七张 distance 图，以及 NY、BAY、COL 的三张 travel time 图，共十个压缩包。使用 `python tmp/prepare_data.py -full` 才下载全部十二个区域的两个版本，共二十四张图。
 网络包括 NY、BAY、COL、FLA、NW、NE、CAL、LKS、E、W、CTR、USA。
 
 - 压缩包保存在 `tmp/USA-road-d.<网络名>.gr.gz` 或 `tmp/USA-road-t.<网络名>.gr.gz`。
@@ -59,7 +57,7 @@ python -c "from pathlib import Path; Path('data/queries/d').mkdir(parents=True, 
 ./data/gen_queries.exe
 ```
 
-每张图生成 1000 对查询，写入 `data/queries/d/<网络名>.in` 或 `data/queries/t/<网络名>.in`，会覆盖已有查询。
+默认只为七张 d 和三张 t 图生成查询；`./data/gen_queries.exe -full` 为全部二十四张生成查询。每张图生成 1000 对查询，写入 `data/queries/d/<网络名>.in` 或 `data/queries/t/<网络名>.in`，会覆盖已有查询。
 基础种子固定为 `20261017`，加网络在生成器列表中的固定下标；同一路网两个权重版本使用相同种子。
 同一标准库环境中结果可复现；各堆应读取同一份查询文件。
 
@@ -75,11 +73,9 @@ python -c "from pathlib import Path; Path('data/queries/d').mkdir(parents=True, 
 ## 文件说明
 
 - heaps.h：四种堆的公共实现
-- bench_common.h：两个 bench 共用的命令行、统计输出和 mini 数据调度
-- offline.h：同源离线查询分组与答案还原
-- optimize_bench.cpp：局部状态清理与同源查询合并的优化测试入口
+- bench_common.h：命令行参数、统计输出和数据集调度
 - dijkstra.h：图读取、公共统计结构、堆接口适配和模板 Dijkstra
-- dijkstra_bench.cpp：统一性能测试入口
+- dijkstra_bench.cpp：统一性能测试程序
 - selftest.cpp：以 STL priority_queue 为参照验证四种堆的最短路结果
 
 ## 编译程序
@@ -87,8 +83,6 @@ python -c "from pathlib import Path; Path('data/queries/d').mkdir(parents=True, 
 ```sh
 g++ -O3 -std=c++11 -Wall -Wextra -o code/dijkstra_bench.exe code/dijkstra_bench.cpp
 g++ -O3 -std=c++11 -Wall -Wextra -o code/selftest.exe code/selftest.cpp
-g++ -O3 -std=c++11 -Wall -Wextra -o code/optimize_bench.exe code/optimize_bench.cpp
-g++ -O3 -std=c++11 -Wall -Wextra -o data/gen_custom.exe data/gen_custom.cpp
 ```
 
 ## 正确性自测
@@ -97,80 +91,61 @@ g++ -O3 -std=c++11 -Wall -Wextra -o data/gen_custom.exe data/gen_custom.cpp
 ./code/selftest.exe
 ```
 
-## Mini 路网测试
+## 标准测试
 
 ```sh
-./code/dijkstra_bench.exe -mini --out results/mini.csv
+./code/dijkstra_bench.exe
 ```
 
-仅依次测试 NY、BAY、COL 的 d/t 版本，共六张图
-仍使用各图完整的 1000 对查询，默认不做完整单源测试
-可用 --heaps "bin,fib" 指定堆类型
--mini 仅适用于 --data 0，此模式自动选择六张图及查询，忽略单图路径与网络名
-六张图结果追加到同一个 CSV，通过 net 列的 NY-d、NY-t 等标识区分
+第一阶段测试 NY、BAY、COL 的 d/t 六图，输出 d/t 平均耗时、t÷d 倍率及堆间对比；第二阶段独立测试 NY、BAY、COL、FLA、NW、NE、CAL 的 d 七图，输出各堆耗时和相对二叉堆倍率。前三张 d 图会重新测试。默认仅输出到控制台，不自动保存文件。
 
-## 指定路网测试
+可选模式如下，不能组合使用：
+
+| 参数 | 测试内容 |
+| --- | --- |
+| 不带参数 | 小图 d/t 六图，再测 d 七图 |
+| `-mini` | 仅小图 d/t 六图 |
+| `-full` | 十二个区域的 d/t 共二十四图 |
+| `-custom 0` | NY-d，5000 条查询 |
+| `-custom 1` | 三层高减键人工图，默认 1000 条查询 |
+
+各模式固定比较四种堆，仅输出到控制台。保存完整输出可以使用 shell 重定向，例如：
 
 ```sh
-./code/dijkstra_bench.exe --data 0 --graph data/assets/d/USA-road-d.NY.gr --net NY-d --p2p data/queries/d/NY.in --heaps "bin,binom,fib,lazy" --full-sources 16 --out results/distance_results.csv
-./code/dijkstra_bench.exe --data 0 --graph data/assets/t/USA-road-t.NY.gr --net NY-t --p2p data/queries/t/NY.in --heaps "bin,binom,fib,lazy" --full-sources 16 --out results/travel_time_results.csv
+./code/dijkstra_bench.exe > fulltest.res 2>&1
+./code/dijkstra_bench.exe -custom 0 > customtest.res 2>&1
+./code/dijkstra_bench.exe -custom 1 >> customtest.res 2>&1
 ```
 
-可将 NY 换为其他网络名
+输入路径由模式固定选择，不提供单图路径、堆筛选、CSV 导出、逐查询导出或额外完整单源测试参数。`-full` 运行前需下载并生成全部二十四图的查询。
 
-## 人工数据生成与测试
+## 专用测试
 
-先创建人工输入目录：
-
-```sh
-python -c "from pathlib import Path; Path('data/queries/custom').mkdir(parents=True, exist_ok=True)"
-```
-
-然后执行
+`data/gen_custom.cpp` 生成两个模式的独立输入，不覆盖标准查询：
 
 ```sh
+g++ -O3 -std=c++11 -Wall -Wextra -o data/gen_custom.exe data/gen_custom.cpp
 ./data/gen_custom.exe
 ```
 
-可选规模参数：./data/gen_custom.exe 300 3000
-生成 low.in、high.in 两张图及各自的 low_queries.in、high_queries.in
-每组固定 1000 对源点到目标层的查询，这组查询专门控制减键频率，并非均匀随机点对
+不带参数生成两组；也可用 `./data/gen_custom.exe -custom 0` 或 `-custom 1` 只生成对应组。
 
-```sh
-./code/dijkstra_bench.exe --data 1 --out results/custom_high.csv
-./code/dijkstra_bench.exe --data 1 --graph data/queries/custom/low.in --p2p data/queries/custom/low_queries.in --net custom-low --out results/custom_low.csv
-```
+- `./code/dijkstra_bench.exe -custom 0`：仅跑 NY 的 d 图，读取 `data/queries/custom/NY_5000.in` 的 5000 条随机点对，固定种子，与标准查询分开存储。同一标准库环境下，前 1000 条与标准生成器一致。
+- `./code/dijkstra_bench.exe -custom 1`：仅跑 `data/queries/custom/dense.in` 和 `dense_queries.in`。默认 k=r=3000，共 6001 个顶点、9,003,000 条边；1000 条查询均从源点 1 到目标层，目标循环选择。每次搜索有 8,997,000 次减键，重复查询仍独立运行，无同源合并。
 
-## 参数与结果说明
+人工图采用 A=r+1、B=k+1，中间点 i 的距离为 i，经它到目标 j 的候选距离为 B+(k-i)A+j；因此边权为 B+(k-i)A+j-i。每轮目标距离大幅下降，并倒序扫描目标编号，制造上浮压力；不预设斐波那契堆一定最快。
 
-- --data 0：默认读取 distance NY 路网与查询
-- --data 1：默认读取人工 high 图与查询
-- 两者共用模板测试逻辑，显式 --graph 和 --p2p 可以覆盖默认路径
-- --full-sources N：额外随机选择 N 个源点做完整单源测试，默认不开启
-- --dump 前缀：为每种堆额外输出逐查询数据
-- 结果 CSV 采用追加模式，重复实验请使用新的输出文件或先备份旧结果
-- 各种堆应使用同一图、同一批查询和相同编译参数
-- 人工高减键图会使惰性堆产生大量重复元素，运行时间和内存开销可能明显增大
+生成器支持 `--k N --r N --queries Q` 调整人工图，主要用于小规模校验，不影响模式 0 固定 5000 条。两个 bench 模式均固定比较四种堆，输出控制台汇总；不能与其他模式组合。
 
-- 原始结果来自重构前的程序，不自动替换，新的性能数据应重新测量
-- Linux/macOS 可在编译和运行命令中同时去掉 .exe 后缀
+编译命令见上文。若 bench 正在运行，请将编译输出写入另一个文件名，或待该轮结束再编译。
 
+## 实现特点
 
-## 离线同源优化测试
-
-```sh
-./code/optimize_bench.exe -mini --out results/optimize_mini.csv
-```
-
-参数与普通 bench 相同，也支持 `--data 1`、`--heaps`、`--graph`、`--p2p` 和 `--dump`
-离线模式只接受点对查询，按起点排序后，每个不同起点只执行一次完整 Dijkstra，再按输入顺序还原所有答案
-只清理本轮访问点的状态，不逐轮全数组 memset；普通模板 Dijkstra 也已采用这种局部清理方式
-离线排序、分组和答案收集计入查询耗时，图和查询文件读取、CSV 导出不计入
-
-CSV 的 mode 为 offline，runs 仍表示输入点对数，终端另外显示实际的 dijkstra_runs
-操作计数对应实际执行的各次完整单源搜索，平均耗时按原始查询数计算
-离线 checksum 累计查询答案，与普通模式累计搜索过程距离的 checksum 含义不同，不应跨模式直接比较
-`--dump` 导出 idx、src、dst、dist，按原始查询顺序排列，不给共享搜索虚构单条查询耗时
-显式 `--full-sources` 仍保留额外完整单源测试的原有行为，与同源查询分组分开统计
-
-起点重复较多时可以减少搜索次数；起点几乎各不相同时，完整搜索可能比原来的目标早停更慢。
+- `Args` 只保存一个 Mode；Dataset 保存内部图路径、查询路径和标签，统一调度与统计输出。
+- `HeapAccess` 特化适配堆接口，`DijkstraRunner<Heap>` 让四种堆共享搜索逻辑，无需运行时虚函数派发。
+- CSR 连续存储出边；整文件缓冲读取和整数扫描，输入解析不计入搜索耗时。
+- `touched` 记录所有已发现顶点，仅恢复本轮状态，包括目标早停时仍留在队列中的点；堆清理也复用容量。
+- 二项堆和斐波那契堆使用 `deque` 节点池，扩容保持节点地址稳定，查询间复用分配空间。
+- 点对查询在目标有效出堆时早停；惰性队列通过距离和确定标记过滤失效条目。
+- 同时统计入堆、出堆、成功距离改善、扫描边、确定点和键值比较，辅助解释耗时差异。
+- 固定随机种子，同一区域 d/t 共享点对；正确性测试使用独立 STL priority_queue Dijkstra，覆盖边界图、三十组随机图、全点对和连续查询状态恢复。

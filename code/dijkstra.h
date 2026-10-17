@@ -209,7 +209,7 @@ struct HeapAccess {
 // 惰性堆用重复入堆代替原地减键，过期记录由统一搜索循环跳过
 template <>
 // 模板特化只适配接口，不复制整份 Dijkstra
-// 旧键值随出堆返回，搜索层据此识别已经过期的条目
+// 条目键值随出堆返回，搜索层据此识别已经过期的条目
 struct HeapAccess<LazyBinaryHeap> {
     static void insert(LazyBinaryHeap& heap, int v, Key k) { heap.push(v, k); }
     static void decrease(LazyBinaryHeap& heap, int v, Key k) { heap.push(v, k); }
@@ -227,12 +227,11 @@ struct DijkstraRunner {
     DijkstraRunner(const Graph& g) : g_(g), dist(g.n + 1, KEY_INF),
         done(g.n + 1, 0), seen(g.n + 1, 0), heap(g.n) {}
 
-    // 每轮开始清空堆，但不重置比较次数的历史累计值
+    // 每轮开始清空堆，但不重置比较次数的累计值
     // 不同查询之间只复用容量，不复用上一次的搜索状态
     // 非负边权保证首次有效出堆的距离就是最短距离
     // 不可达目标返回 KEY_INF，不能用零距离表示失败
-    Key run(int s, int t, bool full, DijkstraStats& st,
-            const vector<int>* targets = nullptr, vector<Key>* answers = nullptr) {
+    Key run(int s, int t, bool full, DijkstraStats& st) {
         long long c0 = heap.cmps(); // 保存比较计数基线，结尾统计本轮增量
         heap.clear(); // 丢弃上次早停后尚未出堆的候选项
         // 首次入堆的点都会记录下来，早停时未弹出的点也必须在结尾清理
@@ -258,7 +257,7 @@ struct DijkstraRunner {
                 if (done[v]) continue; // 非负权图中已经确定的顶点无需再次松弛
                 Key nd = k + g_.w[i]; // 经当前顶点到邻点的候选路径长度
                 if (!seen[v]) {
-                    seen[v] = 1; // 首次发现时登记状态，避免依赖旧 dist 值
+                    seen[v] = 1; // 首次发现时登记状态，避免依赖上轮残留的 dist 值
                     touched.push_back(v);
                     dist[v] = nd;
                     HeapAccess<Heap>::insert(heap, v, nd);
@@ -270,12 +269,6 @@ struct DijkstraRunner {
                     if (HeapAccess<Heap>::lazy) st.pushes ++ ; // 惰性减键实际新增队列条目，单独累计入堆数
                 }
             }
-        }
-        // 离线同源查询在清理 seen 前读取答案，避免误读上一轮留下的 dist
-        // 只有本轮实际发现的目标才可达，不需要每次把整个距离数组清成无穷
-        if (targets && answers) {
-            answers->clear();
-            for (int v : *targets) answers->push_back(seen[v] ? dist[v] : KEY_INF);
         }
         // 保留 dist 供正确性测试检查，只恢复查询状态
         for (int v : touched) { done[v] = 0; seen[v] = 0; }

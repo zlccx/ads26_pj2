@@ -1,9 +1,0 @@
-heap,case,avg_ms,decs,pops,cmps
-BinaryHeap,LowDec,1.3276,0,3301,64195
-LazyBinaryHeap,LowDec,1.1469,0,3301,64195
-BinomialHeap,LowDec,1.4110,0,3301,23469
-FibonacciHeap,LowDec,1.4223,0,3301,22153
-BinaryHeap,HighDec,1.7688,897000,3301,961194
-LazyBinaryHeap,HighDec,56.6910,0,900301,32703822
-BinomialHeap,HighDec,1.9537,897000,3301,919890
-FibonacciHeap,HighDec,2.3050,897000,3301,1815099

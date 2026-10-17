@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstring>
 #include <random>
 
 // 在项目根目录运行；也可指定一张图和输出文件。
@@ -51,15 +52,16 @@ int main(int argc, char** argv) {
 	if (argc == 3) {
 		return generate(argv[1], argv[2], 20261017u) ? 0 : 1;
 	}
-	if (argc != 1) {
-		fprintf(stderr, "Usage: %s [graph.gr output.in]\n", argv[0]);
+	bool full = argc == 2 && strcmp(argv[1], "-full") == 0;
+	if (argc != 1 && !full) {
+		fprintf(stderr, "Usage: %s [-full] or [graph.gr output.in]\n", argv[0]);
 		return 1;
 	}
 	const char* nets[] = {"NY", "BAY", "COL", "FLA", "NW", "NE", "CAL",
 	                      "LKS", "E", "W", "CTR", "USA"};
 	const char kinds[] = {'d', 't'};
 	for (char kind : kinds) {
-		for (int i = 0; i < 12; i ++ ) {
+		for (int i = 0; i < (full ? 12 : (kind == 'd' ? 7 : 3)); i ++ ) {
 			char graph[128], output[128];
 			snprintf(graph, sizeof(graph), "data/assets/%c/USA-road-%c.%s.gr", kind, kind, nets[i]);
 			snprintf(output, sizeof(output), "data/queries/%c/%s.in", kind, nets[i]);
