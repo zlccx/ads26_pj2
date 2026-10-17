@@ -1,7 +1,18 @@
-# 解压后的大图数据（约 348 MB），用 tools/decompress.py 从 data/gz/*.gr.gz 重新生成
+# 压缩包与解压后的大图数据（避免重复提交大体积包）
+data/gz/
+data/*.gr
 gen_by_ds/data/*.gr
 
-# 编译产物
+# 编译生成的目标程序与调试符号
+code/dijkstra_bench
+code/selftest
+code/synth_bench
+code/reset_bench
+code/bench
+selftest_runner
+selftest_asan
+*.dSYM/
+build/
 gen_by_ds/build/
 *.exe
 *.obj
@@ -9,6 +20,7 @@ gen_by_ds/build/
 *.pdb
 *.ilk
 
-# 运行期临时文件
+# 运行期临时文件与系统元数据
+.DS_Store
 gen_by_ds/results/tmp/
 *.log.bak

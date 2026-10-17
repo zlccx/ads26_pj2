@@ -1,0 +1,13 @@
+net,group,heap,count,avg_settled,avg_ms,ratio_to_binary
+CAL,Small,binary,333,288487.7,46.1619,1.0
+CAL,Small,binary-lazy,333,288487.7,31.346,0.679
+CAL,Small,binomial,333,288487.7,76.2431,1.652
+CAL,Small,fibonacci,333,288487.7,80.6093,1.746
+CAL,Medium,binary,333,910511.6,149.907,1.0
+CAL,Medium,binary-lazy,333,910511.6,101.9871,0.68
+CAL,Medium,binomial,333,910511.6,238.5734,1.591
+CAL,Medium,fibonacci,333,910511.6,254.7937,1.7
+CAL,Large,binary,334,1574517.5,261.3746,1.0
+CAL,Large,binary-lazy,334,1574517.5,178.0549,0.681
+CAL,Large,binomial,334,1574517.5,411.0967,1.573
+CAL,Large,fibonacci,334,1574517.5,436.1339,1.669
