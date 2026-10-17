@@ -1,13 +1,18 @@
 # 压缩包与解压后的大图数据（避免重复提交大体积包）
 data/gz/
 data/*.gr
+data/assets/**/*.gr
+data/assets/**/*.gr.part
+tmp/*
+!tmp/prepare_data.py
+data/gen_queries
+__pycache__/
 gen_by_ds/data/*.gr
 
 # 编译生成的目标程序与调试符号
 code/dijkstra_bench
 code/selftest
-code/synth_bench
-code/reset_bench
+code/tobedone
 code/bench
 selftest_runner
 selftest_asan
@@ -24,3 +29,22 @@ gen_by_ds/build/
 .DS_Store
 gen_by_ds/results/tmp/
 *.log.bak
+
+data/gen_custom
+data/queries/custom/*.in
+
+code/optimize_bench
+
+# 生成的输入文件与下载压缩包
+*.in
+*.gr
+*.p2p
+*.gz
+*.zip
+*.7z
+*.rar
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.part
